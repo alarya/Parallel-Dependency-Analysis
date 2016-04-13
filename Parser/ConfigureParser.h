@@ -211,7 +211,8 @@ public:
 	~ConfigParserForDepAnalysis();
 	bool Attach(const std::string& name, bool isFile = true);
 	Parser* Build();
-	void setTypeTable(std::vector<Type>*& TypeTable);
+	void setTypeTable(std::vector<Type>* TypeTable);
+	std::map<std::string, std::vector<std::string>> getDependencies();
 private:
 	std::ifstream* pIn;
 	Scanner::Toker* pToker;
@@ -219,24 +220,22 @@ private:
 	Parser* pParser;
 	Repository* pRepo;
 
-	//Rules
-	BeginningOfScope* pBeginningOfScope;
-	EndOfScope* pEndOfScope;
+	//Rules	
 	ClassDefinition* pClassDefinition;
+	StructDefinition* pStructDefinition;
 	Executable* pExecutable;
 	Declaration* pDeclaration;
 
 	//Actions
-	HandlePush* pHandlePush;
+	CheckDependency* pCheckDependencyClass;
+	CheckDependency* pCheckDependencyStruct;
+	CheckDependency* pCheckDependencyExecutable;
+	CheckDependency* pCheckDependencyDeclaration;
 
-	HandlePop* pHandlePop;
-
-	CheckInheritanceDependency* pCheckInheritanceDependency;
-
-	CheckExecutableDependency* pCheckExecutableDependency;
-
-	CheckDeclarationDependency* pCheckDeclarationDependency;
-
+	//PrintClass* pPrintClass;
+	//PrintStruct* pPrintStruct;
+	//ShowDeclaration* pShowDeclaration;
+	//ShowExecutable* pShowExecutable;
 
 	// prohibit copies and assignments
 	ConfigParserForDepAnalysis(const ConfigParseToConsole&) = delete;

@@ -55,9 +55,7 @@
   - first release
 
 */
-#include <queue>
-#include <string>
-#include <sstream>
+
 #include "Parser.h"
 #include "../SemiExp/itokcollection.h"
 #include "../ScopeStack/ScopeStack.h"
@@ -65,6 +63,11 @@
 #include "../SemiExp/SemiExp.h"
 #include "../AST/AbstractSyntaxTree.h"
 #include "../AST/ASTNode.h"
+#include <queue>
+#include <string>
+#include <sstream>
+#include <map>
+#include <vector>
 
 using namespace Scanner;
 using namespace AST;
@@ -98,6 +101,13 @@ struct Type
 	std::string name;
 };
 
+struct TypeInfo
+{
+	std::vector<std::string> namespaces;
+	std::string type;
+	std::string file;
+};
+
 //---------Contains elements shared by All the rules and actions in the parser----//
 class Repository  // application specific
 {
@@ -107,6 +117,8 @@ class Repository  // application specific
   std::vector<Type>* pTypeTable;
   std::string FileName;
   std::vector<std::string> currentNamespace;
+  std::map<std::string, std::vector<TypeInfo>> typeLookup;
+  std::map<std::string, std::vector<std::string>> dependencies;
 public:
   Repository(Toker* pToker,ASTree* pAst)
   {
@@ -121,8 +133,9 @@ public:
   }
   Repository(Toker* pToker)
   {
-	  p_Toker = pToker;
+	  p_Toker = pToker;	  
   }
+  //---------------Add type to Type Table---------------------//
   void addTypeToTypeTable(std::string _Type, std::string Name)
   {
 	  Type type ;
@@ -132,6 +145,7 @@ public:
 	  type.namespaces = currentNamespace;
 	  pTypeTable->push_back(type);
   }
+  //-------------To track namespace while scanning------------//
   void enterNamespace(std::string ns)
   {
 	  currentNamespace.push_back(ns);
@@ -140,33 +154,122 @@ public:
   {
 	  currentNamespace.pop_back();
   }
+
+  //------------set filename being analyzer-------------------//
   void setFileName(std::string name)
   {
 	  FileName = name;
+	  //initialize filename for which dependencies are found
+	  std::vector<std::string> dependents;
+	  dependencies[name] = dependents;
   }
+  //------------returns scope stack--------------------------//
   ScopeStack<element>& scopeStack()
   {
     return stack;
   }
+  //------------return toker ---------------------------------//
   Scanner::Toker* Toker()
   {
     return p_Toker;
   }
+  //------------returns line number being analyzed currently--//
   size_t lineCount()
   {
     return (size_t)(p_Toker->currentLineCount());
   }
+  //------------returns the AST ------------------------------//
   AST::ASTree* AST()
   {
 	  return _ast;
   }
+  //------------returns the type table built by rules & actions----//
   std::vector<Type>* TypeTable()
   {
 	  return pTypeTable;
   }
+  //--------sets type table for aiding type dep analysis ----------//
   void setTypeTable(std::vector<Type>* TypeTable)
   {
 	  pTypeTable = TypeTable;
+  }
+  //--------builds a fastlook up table of types from type table---//
+  void buildTypeLookUpFromTypeTable()
+  {
+	  for each(Type type in *pTypeTable)
+	  {
+		  std::string typeName = type.name;
+		  TypeInfo typeInfo;
+		  typeInfo.file = type.file;
+		  typeInfo.namespaces = type.namespaces;
+		  typeInfo.type = type.type;
+
+		  if (typeLookup.find(typeName) == typeLookup.end() )
+		  {
+			  //not already present
+			  std::vector<TypeInfo> typeInfoList;
+			  typeInfoList.push_back(typeInfo);
+			  typeLookup[typeName] = typeInfoList;
+		  }
+		  else
+		  {
+			  //already present add TypeInfo to the list
+			  std::vector<TypeInfo> typeInfoList = typeLookup[typeName];
+			  typeInfoList.push_back(typeInfo);
+			  typeLookup[typeName] = typeInfoList;
+		  }
+	  }
+  }
+  //-------print type lookup table--------------------------------//
+  void printTypeLookUp()
+  {
+	  std::cout << "\nCount: " << typeLookup.size() << "\n";
+	  for (auto type : typeLookup)
+	  {
+		  std::cout << "Type Name: " << type.first << "\n";
+		  std::vector<TypeInfo> types = type.second;
+		  for (auto type : types)
+		  {
+			  std::cout << "\t" << type.type << " ";
+			  for (auto ns : type.namespaces)
+				  std::cout << ns << "::";
+
+			  std::cout << " " << type.file << "\n";
+		  }
+		  std::cout << "\n";
+	  }
+  }
+  //------get type info for a type in type lookup table-----------//
+  TypeInfo getTypeInfoForType(std::string typeName)
+  {	
+	  std::vector<TypeInfo> typeInfoList = typeLookup[typeName];
+	  return typeInfoList.front();
+  }
+  //-----checks if a type is contained in the type lookup table---//
+  bool typeTableContainsType(std::string typeName)
+  {
+	  if (typeLookup.find(typeName) == typeLookup.end())
+		  return false;
+	  return true;
+  }
+  //------add dependency of a file having a type on the file being scanned----/
+  void addDependency(std::string file)
+  {
+	  std::vector<std::string> dependents = dependencies[FileName];
+	  bool dependencyExist = false;
+	  for (auto fileName : dependents)
+		  if (file == fileName)
+			  dependencyExist = true;
+	  if (dependencyExist == false)
+	  {
+		  dependents.push_back(file);
+		  dependencies[FileName] = dependents;
+	  }
+  }
+  //------return file dependencies of the file being scanned -------//
+  std::map<std::string, std::vector<std::string>> getDependencies()
+  {
+	  return dependencies;
   }
 };
 
@@ -253,13 +356,6 @@ public:
     if(p_Repos->scopeStack().size() == 0)
       return;
     element elem = p_Repos->scopeStack().pop();
-    if(elem.type == "function")
-    {
-      //std::cout << "\nHandlePop";
-      //std::cout << "\n--popping at line count = " << p_Repos->lineCount();
-      //std::cout << "\n  Function " << elem.name << ", lines = " << p_Repos->lineCount() - elem.lineCount + 1;
-      //std::cout << "\n";
-    }
 	
 	//To track namespaces : leaving a namespace scope
 	if (elem.type == "namespace")
@@ -479,20 +575,7 @@ public:
 		_pRepos->addTypeToTypeTable("class", name);
 	}
 };
-//----Action: CheckInheritanceDependency for class declaration (Rule: ClassDefinition)----
-class CheckInheritanceDependency : public IAction
-{
-	Repository* _pRepos;
-public:
-	CheckInheritanceDependency(Repository* pRepos)
-	{
-		_pRepos = pRepos;
-	}
-	void doAction(ITokCollection*& pTc)
-	{
 
-	}
-};
 
 //--- Rule: Detect Struct ---------------------------------------
 class StructDefinition : public IRule
@@ -958,20 +1041,7 @@ public:
     std::cout << "\n  Declaration: " << se.show();
   }
 };
-//----Action: Check dependency from type table (Rule: Declaration)-----------------------
-class CheckDeclarationDependency : public IAction
-{
-	Repository* _pRepos;
-public:
-	CheckDeclarationDependency(Repository* pRepos)
-	{
-		_pRepos = pRepos;
-	}
-	void doAction(ITokCollection*& pTc)
-	{
 
-	}
-};
 
 //----Rule: Detect Executable stmts -----------------------------------------------------
 class Executable : public IRule           // declar ends in semicolon
@@ -1098,19 +1168,30 @@ public:
     std::cout << "\n  Executable: " << se.show();
   }
 };
-//----Action: Check executable from type table (Rule: Execution)-------------------------
-class CheckExecutableDependency : public IAction
+
+//----Common action to check dependency in a matched set of tokens for a rule-----------
+class CheckDependency : public IAction
 {
 	Repository* _pRepos;
 public:
-	CheckExecutableDependency(Repository* pRepos)
+	CheckDependency(Repository* pRepos)
 	{
 		_pRepos = pRepos;
 	}
 	void doAction(ITokCollection*& pTc)
 	{
-
+		std::size_t noOfTokens = pTc->length();
+		for (int i = 0; i < noOfTokens; i++)
+		{
+			std::string token = (*pTc)[i];
+			if ( _pRepos->typeTableContainsType(token) == true)
+			{
+				TypeInfo typeInfo = _pRepos->getTypeInfoForType((*pTc)[i]);
+				_pRepos->addDependency(typeInfo.file);
+			}
+		}
 	}
 };
+
 
 #endif

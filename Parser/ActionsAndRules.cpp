@@ -192,13 +192,40 @@ int testParserForAST()
 	return 0;
 }
 
+//-----------test building of type lookup from type table ---------------------//
+int testBuildOfLookupTable()
+{
+
+	Scanner::Toker toker;
+	Repository Repo(&toker);
+
+	std::vector<Type> typeTable;
+
+	Type type;
+	type.file = "Tokenizer.h"; type.name = "Toker"; type.type = "class"; type.namespaces.push_back("Global"); type.namespaces.push_back("Scanner");
+	typeTable.push_back(type);
+	Type type1;
+	type1.file = "SemiExp.h"; type1.name = "Toker"; type1.type = "class"; type1.namespaces.push_back("Global"); type1.namespaces.push_back("SomeNameSpace");
+	typeTable.push_back(type1);
+	Type type2;
+	type2.file = "ScopeStack.h"; type2.name = "ScopeStack"; type2.type = "class"; type2.namespaces.push_back("Global"); type2.namespaces.push_back("NS");
+	typeTable.push_back(type2);
+	
+	Repo.setTypeTable(&typeTable);
+	Repo.buildTypeLookUpFromTypeTable();
+
+	Repo.printTypeLookUp();
+	return 0;
+}
+
 int main(int argc, char* argv[])
 {
 	
 	try
 	{
-		return testParsing();
+		//return testParsing();
 		//return testParserForAST();
+		return testBuildOfLookupTable();
 	}
 	catch (const std::exception& e)
 	{

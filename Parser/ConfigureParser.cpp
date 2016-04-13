@@ -340,11 +340,9 @@ Parser* ConfigParserForTypeTable::Build()
 ConfigParserForDepAnalysis::~ConfigParserForDepAnalysis()
 {
 	//rules take care of deleting their actions
-	delete pBeginningOfScope;
-
-	delete pEndOfScope;
-
 	delete pClassDefinition;
+
+	delete pStructDefinition;
 
 	delete pDeclaration;
 
@@ -382,29 +380,33 @@ Parser* ConfigParserForDepAnalysis::Build()
 		pParser = new Parser(pSemi);
 		pRepo = new Repository(pToker);
 
-		pBeginningOfScope = new BeginningOfScope();
-		pHandlePush = new HandlePush(pRepo);
-		pBeginningOfScope->addAction(pHandlePush);
-		pParser->addRule(pBeginningOfScope);
-
-		pEndOfScope = new EndOfScope();
-		pHandlePop = new HandlePop(pRepo);
-		pEndOfScope->addAction(pHandlePop);
-		pParser->addRule(pEndOfScope);
-
 		pClassDefinition = new ClassDefinition();
-		pCheckInheritanceDependency = new CheckInheritanceDependency(pRepo);
-		pClassDefinition->addAction(pCheckInheritanceDependency);
-		pParser->addRule(pClassDefinition);
-
+		pStructDefinition = new StructDefinition();
 		pDeclaration = new Declaration();
-		pCheckDeclarationDependency = new CheckDeclarationDependency(pRepo);
-		pDeclaration->addAction(pCheckDeclarationDependency);
-		pParser->addRule(pDeclaration);
-
 		pExecutable = new Executable();
-		pCheckExecutableDependency = new CheckExecutableDependency(pRepo);
-		pExecutable->addAction(pCheckExecutableDependency);
+
+		pCheckDependencyClass = new CheckDependency(pRepo);
+		pCheckDependencyStruct = new CheckDependency(pRepo);
+		pCheckDependencyDeclaration = new CheckDependency(pRepo);
+		pCheckDependencyExecutable = new CheckDependency(pRepo);
+		//pPrintClass = new PrintClass;
+		//pPrintStruct = new PrintStruct;
+		//pShowDeclaration = new ShowDeclaration;
+		//pShowExecutable = new ShowExecutable;
+
+		pClassDefinition->addAction(pCheckDependencyClass);
+		pStructDefinition->addAction(pCheckDependencyStruct);
+		pDeclaration->addAction(pCheckDependencyDeclaration);
+		pExecutable->addAction(pCheckDependencyExecutable);
+
+		//pClassDefinition->addAction(pPrintClass);
+		//pStructDefinition->addAction(pPrintStruct);
+		//pDeclaration->addAction(pShowDeclaration);
+		//pExecutable->addAction(pShowExecutable);
+
+		pParser->addRule(pClassDefinition);
+		pParser->addRule(pStructDefinition);
+		pParser->addRule(pDeclaration);
 		pParser->addRule(pExecutable);
 
 		return pParser;
@@ -416,9 +418,16 @@ Parser* ConfigParserForDepAnalysis::Build()
 	}
 }
 //----Set Type table in Repository for Dependency Analysis------------------
-void ConfigParserForDepAnalysis::setTypeTable(std::vector<Type>*& TypeTable)
+void ConfigParserForDepAnalysis::setTypeTable(std::vector<Type>* TypeTable)
 {
 	pRepo->setTypeTable(TypeTable);
+	//This is called to build a Easy type lookup for dependency analysis
+	//It is stored locally in the repository and built using mergedTypeTable
+	pRepo->buildTypeLookUpFromTypeTable();
+}
+std::map<std::string, std::vector<std::string>> ConfigParserForDepAnalysis::getDependencies()
+{
+	return pRepo->getDependencies();
 }
 
 #ifdef TEST_CONFIGUREPARSER
@@ -442,61 +451,195 @@ void printTypeTable(std::vector<Type>* pTypeTable)
 		std::cout << _ns.substr(0,_ns.size()-2);
 		std::cout <<  "\t\t\t" << Type.file << "\n";		
 	}
+	
+}
+
+//---------test configParserForTypeTable--------------------------//
+int testConfigParserForTypeTable(int argc, char* argv[])
+{
+	std::cout << "\n  Testing ConfigureParserForTypeTable \n "
+		<< std::string(32, '=') << std::endl;
+
+	// collecting tokens from files, named on the command line
+
+	if (argc < 2)
+	{
+		std::cout
+			<< "\n  please enter name of file to process on command line\n\n";
+		return 1;
+	}
+
+	for (int i = 1; i<argc; ++i)
+	{
+		std::cout << "\n  Processing file " << argv[i];
+		std::cout << "\n  " << std::string(16 + strlen(argv[i]), '-');
+
+		ConfigParserForTypeTable configure;
+		Parser* pParser = configure.Build();
+		try
+		{
+			if (pParser)
+			{
+				if (!configure.Attach(argv[i]))
+				{
+					std::cout << "\n  could not open file " << argv[i] << std::endl;
+					continue;
+				}
+			}
+			else
+			{
+				std::cout << "\n\n  Parser not built\n\n";
+				return 1;
+			}
+			// now that parser is built, use it
+			while (pParser->next())
+				pParser->parse();
+			std::cout << "\n\n";
+
+			std::vector<Type>* pTypeTable = configure.TypeTable();
+			printTypeTable(pTypeTable);
+		}
+		catch (std::exception& ex)
+		{
+			std::cout << "\n\n    " << ex.what() << "\n\n";
+		}
+		std::cout << "\n\n";
+	}
+	return 0;
+}
+
+//-----------------test configparser for dependency analysis------//
+int testConfigParserDepAnalysis()
+{	
+	std::string file = "../../Parser/ActionsAndRules.h";
+
+	std::cout << "\n  Testing ConfigParserforDepAnalysis on file: " << file << "\n "
+		<< std::string(50, '=') << std::endl;
+
+	ConfigParserForDepAnalysis configure;
+	Parser* pParser = configure.Build();
+	try
+	{
+		if (pParser)
+		{
+			if (!configure.Attach(file))
+			{
+				std::cout << "\n  could not open file " << file << std::endl;
+			}
+
+			else
+			{
+				std::vector<Type> typeTable;
+
+				Type type;
+				type.file = "Tokenizer.h"; type.name = "Toker"; type.type = "class"; type.namespaces.push_back("Global"); type.namespaces.push_back("Scanner");
+				typeTable.push_back(type);
+				Type type1;
+				type1.file = "Tokenizer.h"; type1.name = "Toker"; type1.type = "class"; type1.namespaces.push_back("Global"); type1.namespaces.push_back("Scanner");
+				typeTable.push_back(type1);
+				Type type2;
+				type2.file = "Parser.h"; type2.name = "IRule"; type2.type = "struct"; type2.namespaces.push_back("Global");
+				typeTable.push_back(type2);
+				Type type3;
+				type3.file = "ASTNode.h"; type3.name = "ASTNode"; type3.type = "class"; type3.namespaces.push_back("Global");
+				typeTable.push_back(type3);
+
+				configure.setTypeTable(&typeTable);
+
+				//now that parser is built, use it
+				while (pParser->next())
+					pParser->parse();
+				std::cout << "\n\n";
+
+				std::map<std::string, std::vector<std::string>> dependencies = configure.getDependencies();
+
+				//print dependencies found
+				for (auto file : dependencies)
+				{
+					std::cout << "File: " << file.first << "\n";
+					auto dependsOnFiles = file.second;
+					for (auto dependsOnfile : dependsOnFiles)
+					{
+						std::cout << "\t" << dependsOnfile << "\n";
+					}
+				}
+			}
+		}
+		else
+		{
+			std::cout << "\n\n  Parser not built\n\n";
+			return 1;
+		}
+			
+	}
+	catch (std::exception& ex)
+	{
+		std::cout << "\n\n    " << ex.what() << "\n\n";
+	}
+	std::cout << "\n\n";
+
+	return 0;
+}
+
+//--------test configParserToConsole------------------------------//
+int testConfigParserToConsole(int argc, char* argv[])
+{
+	std::cout << "\n  Testing ConfigureParserToConsole \n "
+		<< std::string(32, '=') << std::endl;
+
+	// collecting tokens from files, named on the command line
+
+	if (argc < 2)
+	{
+		std::cout
+			<< "\n  please enter name of file to process on command line\n\n";
+		return 1;
+	}
+
+	for (int i = 1; i<argc; ++i)
+	{
+		std::cout << "\n  Processing file " << argv[i];
+		std::cout << "\n  " << std::string(16 + strlen(argv[i]), '-');
+
+		ConfigParseToConsole configure;
+		Parser* pParser = configure.Build();
+		try
+		{
+			if (pParser)
+			{
+				if (!configure.Attach(argv[i]))
+				{
+					std::cout << "\n  could not open file " << argv[i] << std::endl;
+					continue;
+				}
+			}
+			else
+			{
+				std::cout << "\n\n  Parser not built\n\n";
+				return 1;
+			}
+			// now that parser is built, use it
+			while (pParser->next())
+				pParser->parse();
+			std::cout << "\n\n";
+
+		}
+		catch (std::exception& ex)
+		{
+			std::cout << "\n\n    " << ex.what() << "\n\n";
+		}
+		std::cout << "\n\n";
+	}
+	return 0;
 }
 
 int main(int argc, char* argv[])
 {
-  std::cout << "\n  Testing ConfigureParser module\n "
-            << std::string(32,'=') << std::endl;
+	//testConfigParserToConsole(argc,argv);
 
-  // collecting tokens from files, named on the command line
+	//testConfigParserForTypeTable(argc, argv);
 
-  if(argc < 2)
-  {
-    std::cout 
-      << "\n  please enter name of file to process on command line\n\n";
-    return 1;
-  }
-
-  for(int i=1; i<argc; ++i)
-  {
-    std::cout << "\n  Processing file " << argv[i];
-    std::cout << "\n  " << std::string(16 + strlen(argv[i]),'-');
-
-    //ConfigParseToConsole configure;
-	ConfigParserForTypeTable configure;
-    Parser* pParser = configure.Build();
-    try
-    {
-      if(pParser)
-      {
-        if(!configure.Attach(argv[i]))
-        {
-          std::cout << "\n  could not open file " << argv[i] << std::endl;
-          continue;
-        }
-      }
-      else
-      {
-        std::cout << "\n\n  Parser not built\n\n";
-        return 1;
-      }
-      // now that parser is built, use it
-      while(pParser->next())
-        pParser->parse();
-      std::cout << "\n\n";
-
-	  //-------For testing Configure Parser for type table: print type table-----
-	  std::vector<Type>* pTypeTable = configure.TypeTable();
-	  printTypeTable(pTypeTable);
-	  //-------------------------------------------------------------------------
-    }
-    catch(std::exception& ex)
-    {
-      std::cout << "\n\n    " << ex.what() << "\n\n";
-    }
-    std::cout << "\n\n";
-  }
+	testConfigParserDepAnalysis();
 }
 
 #endif

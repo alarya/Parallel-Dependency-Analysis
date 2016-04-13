@@ -1,6 +1,2 @@
-﻿  MetricExecutive.cpp
-  MetricAnalyzer.cpp
-  Parser.cpp
-  ConfigureParser.cpp
-  Generating Code...
+﻿  ConfigureParser.cpp
   MetricAnalyzer.vcxproj -> E:\Syracuse(Spring2016)\OOD\Project3\Project3\x64\Debug\MetricAnalyzer.exe
