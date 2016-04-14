@@ -80,37 +80,29 @@ void enqueueFiles(ThreadPool<string>& fp,FileSpec filespec)
 	}
 }
 
-//------------return the result of type analysis of a file and enque the result------------//
+//------------enqueue work items on the work queue of typeAnalysiProc----------------------//
 void typeAnalysis(ThreadPool <vector<Type>>& tp, string file)
-{
-	TypeAnalysis typeAnalyzer;
-	std::vector<Type> partialTypeTable = typeAnalyzer.doAnalysis(file);
-	
+{	
 	WorkItem <std::vector<Type>>* wi = new WorkItem<std::vector<Type>>();
 	*wi = [=]() {
+		std::cout << "\nStarting type Analysis on: " << file << " on thread: "<< std::this_thread::get_id() << "\n";
+		TypeAnalysis typeAnalyzer;
+		std::vector<Type> partialTypeTable = typeAnalyzer.doAnalysis(file);
 		return partialTypeTable;	
 	};
 
 	tp.doWork(wi);
 }
 
-//--------deque the files found and start thread to do type analysis on it ----------------//
+//--------deque the files found and calls type analysis to enQ type analysis work items----------------//
 void dequeueFiles(ThreadPool<string>& fp, ThreadPool <vector<Type>>& tp)
 {
-	std::vector<std::thread> typeAnalysisThreads;
-
 	while (fp.resultsQueueSize() != 0)
 	{
 		std::string file = fp.result();
-
-		std::cout << "\nStarting type Analysis on: " << file << "\n";
-
-		typeAnalysisThreads.push_back(std::thread(typeAnalysis, std::ref(tp), file)); //start a thread to start building partial type tables
+				
+		typeAnalysis(std::ref(tp), file); //start a thread to start building partial type tables
 	}
-	
-	//wait for all type analysis threads to finish 
-	for (auto& thread : typeAnalysisThreads)
-			thread.join();
 }
 
 //-------runs on a single thread to deque partial Type tables and merge them---------------//
@@ -147,11 +139,17 @@ void ParallelDependencyAnalysis::Pass1(FileSpec filespec)
 
 	//done with processing files & type analysis for each of them
 	filesProc.doWork(nullptr);		
+	filesProc.doWork(nullptr);
+	filesProc.doWork(nullptr);
+	filesProc.doWork(nullptr);
 	filesProc.wait();	
-	std::cout << ": done with finding files \n";
+	std::cout << "\ndone with finding files \n";
+	typeAnalProc.doWork(nullptr);
+	typeAnalProc.doWork(nullptr);
+	typeAnalProc.doWork(nullptr);
 	typeAnalProc.doWork(nullptr);
 	typeAnalProc.wait();
-	std::cout << ": done with type analysis on files \n";
+	std::cout << "\ndone with type analysis on files \n";
 
 	//need to start a thread to merge results queue of typeAnalysisProcessor here
 	std::thread mergePartialTypeTables(merge, std::ref(typeAnalProc), std::ref(mergedTypeTable));
@@ -164,38 +162,31 @@ void ParallelDependencyAnalysis::Pass1(FileSpec filespec)
 	Pass2(mergedTypeTable, filespec);
 }
 
-//------------return the result of type analysis of a file and enque the result------------//
+//------------enques work items to dep analysis proc ---------------------------------------------//
 void depAnalysis(ThreadPool<DepResult>& dp, string f,vector<Type>& TT)
-{
-	DependencyAnalysis dependencyAnalyzer;
-	DepResult partialDependencies;
-	partialDependencies.result = dependencyAnalyzer.doAnalysis(f, TT);
-
+{	
 	WorkItem <DepResult>* wi = new WorkItem<DepResult>();
 	*wi = [=]() {
+		std::cout << "\nStarting Dep Analysis on: " << f << " on thread: " << std::this_thread::get_id() << "\n";
+		DependencyAnalysis dependencyAnalyzer;
+		DepResult partialDependencies;
+		partialDependencies.result = dependencyAnalyzer.doAnalysis(f, TT);
 		return partialDependencies;
 	};
-
 	dp.doWork(wi);
 }
 
-//--------deque the files found and start thread to do dep analysis on it -----------------//
+//--------deque the files found and calls method to enque dep analysis work item on depanalysis proc -----//
 void dQFilesForDepAnalysis(ThreadPool<string>& fp, ThreadPool<DepResult>& dp, vector<Type>& TT)
 {
-	std::vector<std::thread> depAnalysisThreads;
 
 	while (fp.resultsQueueSize() != 0)
 	{
 		std::string file = fp.result();
 
-		std::cout << "\nStarting dependency Analysis on: " << file << "\n";
-
-		depAnalysisThreads.push_back(std::thread(depAnalysis, std::ref(dp), file,std::ref(TT))); //start a thread to start analyse dependency
+		depAnalysis(std::ref(dp), file,std::ref(TT)); //call method to enqueue dep analysis work items to depAnalProc
 	}
 
-	//wait for all type analysis threads to finish 
-	for (auto& thread : depAnalysisThreads)
-		thread.join();
 }
 
 //----------------------merge the dependency results --------------------------------------//
@@ -233,13 +224,21 @@ void ParallelDependencyAnalysis::Pass2(TypeTable mergedTT, FileSpec filespec)
 	std::thread startDepAnalysis(dQFilesForDepAnalysis, ref(filesProc), ref(depAnalProc), ref(mergedTT));  //deque files found and start parallel analysis on them 
 	startDepAnalysis.join();
 
-	//done with processing files & type analysis for each of them
+	//Enqueued all files: send signal for child threads to quit
+	filesProc.doWork(nullptr);
+	filesProc.doWork(nullptr);
+	filesProc.doWork(nullptr);
 	filesProc.doWork(nullptr);
 	filesProc.wait();
-	std::cout << ": done with finding files \n";
+	std::cout << "\ndone with finding files \n";
+
+	//Enqueued all dep analysis work items: send signal for child threads to quit
+	depAnalProc.doWork(nullptr);
+	depAnalProc.doWork(nullptr);
+	depAnalProc.doWork(nullptr);
 	depAnalProc.doWork(nullptr);
 	depAnalProc.wait();
-	std::cout << ": done with dep analysis on files \n";
+	std::cout << "\ndone with dep analysis on files \n";
 
 	//need to start a thread to merge results queue of typeAnalysisProcessor here
 	std::thread mergePartialDependencies(mergeDeps, std::ref(depAnalProc), std::ref(mergedDepResult));

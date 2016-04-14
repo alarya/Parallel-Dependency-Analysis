@@ -25,34 +25,107 @@ int main()
 	std::cout << "\n  main thread id = " << std::this_thread::get_id();
 
 	ProcessWorkItem<WorkResult> processor;
-	processor.start();
-
-	// define 1st work item
 
 	WorkItem<WorkResult> wi1 = []() {
-		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		//std::cout << "\n  working on thread " << std::this_thread::get_id();
 		return "Hello from wi1";
 	};
 
-	processor.doWork(&wi1);
-
-	// define 2nd work item
-
-	WorkItem<WorkResult> wi2 = []()
-	{
+	WorkItem<WorkResult> wi2 = []() {
 		std::cout << "\n  working on thread " << std::this_thread::get_id();
-		size_t sum = 0;
-		for (size_t i = 0; i < 100000; ++i)
-			sum += i;
-		return "wi2 result = " + Utilities::Converter<size_t>::toString(sum);
+		return "Hello from wi2";
 	};
 
+	WorkItem<WorkResult> wi3 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi3";
+	};
+
+	WorkItem<WorkResult> wi4 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi4";
+	};
+
+	WorkItem<WorkResult> wi5 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi5";
+	};
+
+	WorkItem<WorkResult> wi6 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi6";
+	};
+
+	WorkItem<WorkResult> wi7 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi7";
+	};
+
+	WorkItem<WorkResult> wi8 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi8";
+	};
+
+	WorkItem<WorkResult> wi9 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi9";
+	};
+
+	WorkItem<WorkResult> wi10 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi10";
+	};
+
+	WorkItem<WorkResult> wi11 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi11";
+	};
+
+	WorkItem<WorkResult> wi12 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi12";
+	};
+
+	WorkItem<WorkResult> wi13 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi13";
+	};
+
+	WorkItem<WorkResult> wi14 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi14";
+	};
+
+	WorkItem<WorkResult> wi15 = []() {
+		std::cout << "\n  working on thread " << std::this_thread::get_id();
+		return "Hello from wi15";
+	};
+
+	processor.doWork(&wi1);
 	processor.doWork(&wi2);
+	processor.doWork(&wi3);
+	processor.doWork(&wi4);
+	processor.doWork(&wi5);
+	processor.doWork(&wi6);
+	processor.doWork(&wi7);
+	processor.doWork(&wi8);
+	processor.doWork(&wi9);
+	processor.doWork(&wi10);
+	processor.doWork(&wi11);
+	processor.doWork(&wi12);
+	processor.doWork(&wi13);
+	processor.doWork(&wi14);
+	processor.doWork(&wi15);
 
-	// the following calls to result() block until results are enqueued
 
-	std::cout << "\n  " << processor.result();
-	std::cout << "\n  " << processor.result();
+	processor.start();
+
+	for (int i = 0; i < 15; i++)
+		std::cout << "\n  " << processor.result();
+
+	processor.doWork(nullptr);
+	processor.doWork(nullptr);
+	processor.doWork(nullptr);
 	processor.doWork(nullptr);
 
 	// wait for child thread to complete

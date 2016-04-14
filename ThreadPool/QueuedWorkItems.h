@@ -1,13 +1,33 @@
 #pragma once
-///////////////////////////////////////////////////////////////////////
-// QueuedWorkItems.h - child thread processes enqueued work items    //
-//                                                                   //
-// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2016         //
-///////////////////////////////////////////////////////////////////////
-/*
-* A single child thread processes work items equeued by main thread
-*/
+////////////////////////////////////////////////////////////////////////////////
+// QueuedWorkItems.h - child threads processes enqueued work items             //
+//                                                                            //
+// Original Author: Jim Fawcett, CSE687 - Object Oriented Design, Spring 2016 //
+// Modified by: Alok Arya													  //
+////////////////////////////////////////////////////////////////////////////////
 
+/* Package Operations:
+* -------------------
+* This package maintains two blocking queues. on one queue the work items (callable objects)
+* are enqueued. There are a limited number of reusable child threads started which start
+* dequeing and executes the work items and enques the result in the results queue.
+*
+* Required Files:
+* ---------------
+* BlockingQueue.h
+*
+* Build Process:
+* --------------
+* devenv Cpp11-BlockingQueue.sln /rebuild debug
+*
+* Maintenance History:
+* --------------------
+* ver 1.1 : 14th April
+*   -Now there are multiple child threads to deque
+* ver 1.0 : unknown
+* - first release
+*
+*/
 #include <thread>
 #include <functional>
 #include "BlockingQueue.h"
@@ -15,10 +35,9 @@
 template<typename Result>
 using WorkItem = std::function<Result()>;
 
-///////////////////////////////////////////////////////////////////////
-// class to process work items
-// - each work item is processed sequentially on a single child thread
 
+//--- class to process work items
+//----each work item is processed sequentially on a single child thread
 template<typename Result>
 class ThreadPool
 {
@@ -30,7 +49,7 @@ public:
 	size_t resultsQueueSize();
 	~ThreadPool();
 private:
-	std::thread* _pThread;
+	std::vector<std::thread> Threads;
 	BlockingQueue<WorkItem<Result>*> _workItemQueue;
 	BlockingQueue<Result> _resultsQueue;
 };
@@ -39,7 +58,8 @@ private:
 template<typename Result>
 void ThreadPool<Result>::wait()
 {
-	_pThread->join();
+	for (auto& thread : Threads)
+		thread.join();
 }
 
 //-------return size of results queue------------------------------
@@ -74,14 +94,18 @@ void ThreadPool<Result>::start()
 			WorkItem<Result>* pWi = _workItemQueue.deQ();
 			if (pWi == nullptr)
 			{
-				std::cout << "\n  shutting down work item processing";
+				//std::cout << "\n  shutting down work item processing";
 				return;
 			}
 			Result result = (*pWi)();
 			_resultsQueue.enQ(result);
 		}
 	};
-	_pThread = new std::thread(threadProc);
+	//add 4 threads
+	Threads.push_back(std::thread(threadProc));
+	Threads.push_back(std::thread(threadProc));
+	Threads.push_back(std::thread(threadProc));
+	Threads.push_back(std::thread(threadProc));
 }
 
 
@@ -89,7 +113,7 @@ void ThreadPool<Result>::start()
 template<typename Result>
 ThreadPool<Result>::~ThreadPool()
 {
-	delete _pThread;
+
 }
 
 

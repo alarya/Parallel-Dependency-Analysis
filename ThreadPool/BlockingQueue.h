@@ -1,13 +1,13 @@
 #ifndef BLOCKINGQUEUE_H
 #define BLOCKINGQUEUE_H
-
-/*------------------------------------------------------------*
- * BlockingQueue.h - Thread-safe Blocking Queue               *
- * ver 1.2                                                    *
- * Jim Fawcett, CSE687 - Object Oriented Design, Spring 2015  *
- *------------------------------------------------------------*
+ 
+/*-----------------------------------------------------------------------------*
+ * BlockingQueue.h - Thread-safe Blocking Queue                                *
+ * ver 1.2                                                                     *
+ * Original Author: Jim Fawcett, CSE687 - Object Oriented Design, Spring 2015  *
+ * Modified By: Alok Arya													   *
+ *-----------------------------------------------------------------------------*
 */
-
 
 /* Package Operations:
 * -------------------
@@ -27,6 +27,8 @@
 *
 * Maintenance History:
 * --------------------
+* ver 1.3 : 13 April 2016
+* - Enq now notifies all threads waiting instead of one
 * ver 1.2 : 27 Feb 2016
 * - added front();
 * - added move ctor and move assignment
@@ -117,7 +119,7 @@ void BlockingQueue<T>::enQ(const T& t)
 		std::lock_guard<std::mutex> l(mtx_);
 		q_.push(t);
 	}
-	cv_.notify_one();
+	cv_.notify_all();
 }
 
 //----peek at next item to be popped-------------------------------
