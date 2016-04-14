@@ -1,1 +1,18 @@
-﻿
+﻿  ParallelDependencyExecutive.cpp
+  Utilities.cpp
+  TypeAnalysis.cpp
+  Tokenizer.cpp
+  QueuedWorkItems.cpp
+  BlockingQueue.cpp
+  SemiExp.cpp
+  Parser.cpp
+  ConfigureParser.cpp
+  ActionsAndRules.cpp
+  ParallelDependencyAnalysis.cpp
+  FileSystem.cpp
+  FileMgr.cpp
+  DependencyAnalysis.cpp
+  ASTNode.cpp
+  AbstractSyntaxTree.cpp
+  Generating Code...
+  ParallelDependencyExecutive.vcxproj -> E:\Syracuse(Spring2016)\OOD\Project3\Project3\x64\Debug\ParallelDependencyExecutive.exe

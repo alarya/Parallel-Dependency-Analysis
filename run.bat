@@ -3,5 +3,4 @@
 cd x64
 cd Debug
 
-MetricAnalyzer.exe ../../root *.cpp
-MetricAnalyzer.exe ../../root *.h
+ParallelDependencyExecutive.exe ../../root *h *.cpp

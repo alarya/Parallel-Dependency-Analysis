@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClInclude Include="..\AST\AbstractSyntaxTree.h" />
     <ClInclude Include="..\AST\ASTNode.h" />
+    <ClInclude Include="..\DependencyAnalysis\DependencyAnalysis.h" />
     <ClInclude Include="..\FileMgr\FileMgr.h" />
     <ClInclude Include="..\FileSystem-Windows\FileSystemDemo\FileSystem.h" />
     <ClInclude Include="..\Parser\ActionsAndRules.h" />
@@ -161,6 +162,7 @@
   <ItemGroup>
     <ClCompile Include="..\AST\AbstractSyntaxTree.cpp" />
     <ClCompile Include="..\AST\ASTNode.cpp" />
+    <ClCompile Include="..\DependencyAnalysis\DependencyAnalysis.cpp" />
     <ClCompile Include="..\FileMgr\FileMgr.cpp" />
     <ClCompile Include="..\FileSystem-Windows\FileSystemDemo\FileSystem.cpp" />
     <ClCompile Include="..\Parser\ActionsAndRules.cpp" />

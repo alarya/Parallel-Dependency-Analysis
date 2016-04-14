@@ -1,2 +1,18 @@
-﻿  ConfigureParser.cpp
+﻿  ParallelDependencyAnalysis.cpp
+  Utilities.cpp
+  TypeAnalysis.cpp
+  Tokenizer.cpp
+  QueuedWorkItems.cpp
+  BlockingQueue.cpp
+  SemiExp.cpp
+  ScopeStack.cpp
+  Parser.cpp
+  ConfigureParser.cpp
+  ActionsAndRules.cpp
+  FileSystem.cpp
+  FileMgr.cpp
+  DependencyAnalysis.cpp
+  ASTNode.cpp
+  AbstractSyntaxTree.cpp
+  Generating Code...
   ParallelDependencyAnalysis.vcxproj -> E:\Syracuse(Spring2016)\OOD\Project3\Project3\x64\Debug\ParallelDependencyAnalysis.exe

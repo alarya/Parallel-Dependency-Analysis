@@ -255,6 +255,9 @@ public:
   //------add dependency of a file having a type on the file being scanned----/
   void addDependency(std::string file)
   {
+	  if (file == FileName)
+		  return;
+	  
 	  std::vector<std::string> dependents = dependencies[FileName];
 	  bool dependencyExist = false;
 	  for (auto fileName : dependents)
@@ -665,6 +668,115 @@ public:
 	{
 		std::string name = (*pTc)[pTc->find("struct") + 1];
 		_pRepos->addTypeToTypeTable("struct", name);
+	}
+};
+
+
+//--- Rule: Detect Enum ---------------------------------------
+class EnumDefinition : public IRule
+{
+public:
+	bool doTest(ITokCollection*& pTc)
+	{
+		ITokCollection& tc = *pTc;
+		if (tc[tc.length() - 1] == "{")
+		{
+			size_t index = tc.find("enum");
+			if (index < tc.length())
+			{
+				doActions(pTc);
+			}
+		}
+
+		return true;
+	}
+};
+//----Action: Save Struct to TypeTable(Rule: StructDefinition)----
+class SaveEnumToTypeTable : public IAction
+{
+	Repository* _pRepos;
+public:
+	SaveEnumToTypeTable(Repository* pRepos)
+	{
+		_pRepos = pRepos;
+	}
+	void doAction(ITokCollection*& pTc)
+	{
+		std::string name = (*pTc)[pTc->find("enum") + 1];
+		_pRepos->addTypeToTypeTable("enum", name);
+	}
+};
+
+
+//--- Rule: Detect Enum ---------------------------------------
+class TypeDefDefinition : public IRule
+{
+public:
+	bool doTest(ITokCollection*& pTc)
+	{
+		ITokCollection& tc = *pTc;
+		if (tc[tc.length() - 1] == ";")
+		{
+			size_t index = tc.find("typedef");
+			if (index < tc.length())
+			{
+				doActions(pTc);
+			}
+		}
+
+		return true;
+	}
+};
+//----Action: Save TypeDef to TypeTable(Rule: TypeDefDefinition)----
+class SaveTypeDefToTypeTable : public IAction
+{
+	Repository* _pRepos;
+public:
+	SaveTypeDefToTypeTable(Repository* pRepos)
+	{
+		_pRepos = pRepos;
+	}
+	void doAction(ITokCollection*& pTc)
+	{
+		std::string name = (*pTc)[pTc->find("typedef") - 1];
+		_pRepos->addTypeToTypeTable("typedef", name);
+	}
+};
+
+
+//--- Rule: Detect Using ---------------------------------------
+class UsingDefinition : public IRule
+{
+public:
+	bool doTest(ITokCollection*& pTc)
+	{
+		ITokCollection& tc = *pTc;
+		if (tc[tc.length() - 1] == ";")
+		{
+			size_t index1 = tc.find("using");
+			size_t index2 = tc.find("namespace");
+			if (index1 < tc.length() && !(index2 < tc.length()) )
+			{
+				doActions(pTc);
+			}
+		}
+
+		return true;
+	}
+};
+//----Action: Save TypeDef to TypeTable(Rule: TypeDefDefinition)----
+class SaveUsingToTypeTable : public IAction
+{
+	Repository* _pRepos;
+public:
+	SaveUsingToTypeTable(Repository* pRepos)
+	{
+		_pRepos = pRepos;
+	}
+	void doAction(ITokCollection*& pTc)
+	{
+		std::string name = (*pTc)[pTc->find("using") + 1];
+		_pRepos->addTypeToTypeTable("using", name);
 	}
 };
 

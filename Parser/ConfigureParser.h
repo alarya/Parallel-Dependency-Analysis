@@ -2,7 +2,7 @@
 #define CONFIGUREPARSER_H
 /////////////////////////////////////////////////////////////////////
 //  ConfigureParser.h - builds and configures parsers              //
-//  ver 2.2                                                        //
+//  ver 2.3                                                       //
 //                                                                 //
 //  Lanaguage:     Visual C++ 2005                                 //
 //  Platform:      Dell Dimension 9150, Windows XP SP2             //
@@ -23,6 +23,18 @@
   conConfig.Build();
   conConfig.Attach(someFileName);
 
+  ConfigParseToTypeTable conConfig;
+  conConfig.Build();
+  conConfig.Attach(someFileName);
+  vector<Type> typeTable = config.TypeTable()     // returns the type table built during analysis
+
+  ConfigParserForDepAnalysis conConfig;
+  conConfig.Build();
+  conConfig.Attach(someFileName);
+  conConfig.setTypeTable(TypeTable);             // sets the type table for aiding dependency analysis
+  std::map<std::string, std::vector<std::string>> getDependencies();
+
+
   Build Process:
   ==============
   Required files
@@ -37,6 +49,8 @@
 
   Maintenance History:
   ====================
+  ver 2.3 : 13 April 16
+  - Added a builder to build parser for creating type tables and for dependency analysis
   ver 2.2 : 13 March 16
   - Added a builder to build parser with AST for code analysis
   ver 2.1 : 19 Feb 16
@@ -47,8 +61,8 @@
   - cosmetic changes to ConfigureParser.cpp
   ver 1.0 : 12 Jan 06
   - first release
-
 */
+
 #include <fstream>
 #include "Parser.h"
 #include "../SemiExp/SemiExp.h"
@@ -128,7 +142,9 @@ private:
 	EndOfScope* pEndOfScope;
 	NameSpaceDefinition* pNameSpaceDefinition;
 	ClassDefinition* pClassDefinition;
+	EnumDefinition* pEnumDefinition;
 	StructDefinition* pStructDefinition;
+	UsingDefinition* pUsingDefinition;
 
 	//Actions
 	HandlePush* pHandlePush;	
@@ -137,11 +153,13 @@ private:
 
 	PushNamespace* pPushNamespace;	
 
-	PushClass* pPushClass;	
 	SaveClassToTypeTable* pSaveClassToTypeTable;
 
-	PushStruct* pPushStruct;
+	SaveEnumToTypeTable* pSaveEnumToTypeTable;
+
 	SaveStructToTypeTable* pSaveStructToTypeTable;
+
+	SaveUsingToTypeTable* pSaveUsingToTypeTable;
 
 	// prohibit copies and assignments
 	ConfigParserForTypeTable(const ConfigParseToConsole&) = delete;
@@ -225,17 +243,14 @@ private:
 	StructDefinition* pStructDefinition;
 	Executable* pExecutable;
 	Declaration* pDeclaration;
+	FunctionDefinition* pFunctionDefinition;
 
 	//Actions
 	CheckDependency* pCheckDependencyClass;
 	CheckDependency* pCheckDependencyStruct;
 	CheckDependency* pCheckDependencyExecutable;
 	CheckDependency* pCheckDependencyDeclaration;
-
-	//PrintClass* pPrintClass;
-	//PrintStruct* pPrintStruct;
-	//ShowDeclaration* pShowDeclaration;
-	//ShowExecutable* pShowExecutable;
+	CheckDependency* pCheckDependencyFunctionDefinition;
 
 	// prohibit copies and assignments
 	ConfigParserForDepAnalysis(const ConfigParseToConsole&) = delete;

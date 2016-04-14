@@ -1,1 +1,5 @@
-﻿  SemiExp.vcxproj -> E:\Syracuse(Spring2016)\OOD\Project3\Project3\x64\Debug\SemiExp.exe
+﻿  SemiExp.cpp
+  Utilities.cpp
+  Tokenizer.cpp
+  Generating Code...
+  SemiExp.vcxproj -> E:\Syracuse(Spring2016)\OOD\Project3\Project3\x64\Debug\SemiExp.exe

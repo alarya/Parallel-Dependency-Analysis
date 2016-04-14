@@ -1,2 +1,13 @@
-﻿  ConfigureParser.cpp
+﻿  TypeTable.cpp
+  Parser.cpp
+  ConfigureParser.cpp
+  ActionsAndRules.cpp
+  Utilities.cpp
+  Tokenizer.cpp
+  SemiExp.cpp
+  ScopeStack.cpp
+  FileSystem.cpp
+  ASTNode.cpp
+  AbstractSyntaxTree.cpp
+  Generating Code...
   Parser.vcxproj -> E:\Syracuse(Spring2016)\OOD\Project3\Project3\x64\Debug\Parser.exe

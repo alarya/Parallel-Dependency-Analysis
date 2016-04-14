@@ -100,7 +100,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TEST_DEPENDENCYANALYSIS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,6 +142,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\AST\AbstractSyntaxTree.h" />
+    <ClInclude Include="..\AST\ASTNode.h" />
+    <ClInclude Include="..\Parser\ActionsAndRules.h" />
+    <ClInclude Include="..\Parser\ConfigureParser.h" />
+    <ClInclude Include="..\Parser\Parser.h" />
+    <ClInclude Include="..\SemiExp\SemiExp.h" />
+    <ClInclude Include="..\Tokenizer\Tokenizer.h" />
+    <ClInclude Include="..\Utilities\Utilities.h" />
+    <ClInclude Include="DependencyAnalysis.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\AST\AbstractSyntaxTree.cpp" />
+    <ClCompile Include="..\AST\ASTNode.cpp" />
+    <ClCompile Include="..\Parser\ActionsAndRules.cpp" />
+    <ClCompile Include="..\Parser\ConfigureParser.cpp" />
+    <ClCompile Include="..\Parser\Parser.cpp" />
+    <ClCompile Include="..\SemiExp\SemiExp.cpp" />
+    <ClCompile Include="..\Tokenizer\Tokenizer.cpp" />
+    <ClCompile Include="..\Utilities\Utilities.cpp" />
+    <ClCompile Include="DependencyAnalysis.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,2 +1,15 @@
-﻿  ConfigureParser.cpp
+﻿  MetricExecutive.cpp
+  MetricAnalyzer.cpp
+  Utilities.cpp
+  Tokenizer.cpp
+  SemiExp.cpp
+  ScopeStack.cpp
+  Parser.cpp
+  ConfigureParser.cpp
+  ActionsAndRules.cpp
+  FileSystem.cpp
+  FileMgr.cpp
+  ASTNode.cpp
+  AbstractSyntaxTree.cpp
+  Generating Code...
   MetricAnalyzer.vcxproj -> E:\Syracuse(Spring2016)\OOD\Project3\Project3\x64\Debug\MetricAnalyzer.exe

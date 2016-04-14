@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
-// FileMgr.cpp - Gets files of specified pattern recursively               //
-// ver 1.0                                                                 //
+// FileMgr.h - Gets files of specified pattern recursively                 //
+// ver 1.1                                                                 //
 // ----------------------------------------------------------------------- //
 // Language:    Visual C++, Visual Studio 2015                             //
 // Platform:    ThinkPad L440, Core i7-4712MQ                              //
@@ -24,6 +24,18 @@ vector<string> FileMgr::getAllFiles(string dir, string pattern)
 	getFiles(dir, pattern);
 
 	return files;
+}
+
+//-------------return a set of files rooted under a dir and matching a set of patterns ----//
+vector<string> FileMgr::getAllFilesForPatterns(string dir, vector<string> patterns)
+{
+	vector<string> filesFound;
+
+	for (string pattern : patterns)
+	{
+		filesFound = getAllFiles(dir, pattern);
+	}
+	return filesFound;
 }
 
 //-----------------Helper recursive function to search files in subdirectories-----------//
@@ -57,12 +69,13 @@ void FileMgr::getFiles(string dir, string pattern)
 int main()
 {
 	string dir = "../../root";
-	string pattern = "*h";
+	vector<string> patterns;
+	patterns.push_back("*.h"); patterns.push_back("*.cpp");
 	FileMgr fileMgr;
 	vector<string> files;
 
 	try {
-		files = fileMgr.getAllFiles(dir, pattern);
+		files = fileMgr.getAllFilesForPatterns(dir, patterns);
 	}
 
 	catch (exception& e)
@@ -76,5 +89,4 @@ int main()
 		cout << "\n " << f << " \n";
 	}
 }
-
 #endif 

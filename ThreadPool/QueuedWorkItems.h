@@ -20,7 +20,7 @@ using WorkItem = std::function<Result()>;
 // - each work item is processed sequentially on a single child thread
 
 template<typename Result>
-class ProcessWorkItem
+class ThreadPool
 {
 public:
 	void start();
@@ -28,7 +28,7 @@ public:
 	Result result();
 	void wait();
 	size_t resultsQueueSize();
-	~ProcessWorkItem();
+	~ThreadPool();
 private:
 	std::thread* _pThread;
 	BlockingQueue<WorkItem<Result>*> _workItemQueue;
@@ -37,35 +37,35 @@ private:
 
 //----Wait for child thread to terminate---------------------------
 template<typename Result>
-void ProcessWorkItem<Result>::wait()
+void ThreadPool<Result>::wait()
 {
 	_pThread->join();
 }
 
 //-------return size of results queue------------------------------
 template<typename Result>
-size_t ProcessWorkItem<Result>::resultsQueueSize()
+size_t ThreadPool<Result>::resultsQueueSize()
 {
 	return _resultsQueue.size();
 }
 
 //----enqueue work item--------------------------------------------
 template<typename Result>
-void ProcessWorkItem<Result>::doWork(WorkItem<Result>* pWi)
+void ThreadPool<Result>::doWork(WorkItem<Result>* pWi)
 {
 	_workItemQueue.enQ(pWi);
 }
 
 //----retrieve results with blocking call--------------------------
 template<typename Result>
-Result ProcessWorkItem<Result>::result()
+Result ThreadPool<Result>::result()
 {
 	return _resultsQueue.deQ();
 }
 
 //----start child thread that dequeus work items-------------------
 template<typename Result>
-void ProcessWorkItem<Result>::start()
+void ThreadPool<Result>::start()
 {
 	std::function<void()> threadProc =
 		[&]() {
@@ -87,7 +87,7 @@ void ProcessWorkItem<Result>::start()
 
 //----clean up heap------------------------------------------------
 template<typename Result>
-ProcessWorkItem<Result>::~ProcessWorkItem()
+ThreadPool<Result>::~ThreadPool()
 {
 	delete _pThread;
 }

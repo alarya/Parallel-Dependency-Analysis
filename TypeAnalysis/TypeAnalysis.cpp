@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////
-// ParallelDependencyAnalysis.h - Performs dependency analysis in 2 passes //
+// TypeAnalysis.h - Build Type Table for a specified file                  //
 // ver 1.0                                                                 //
 // ----------------------------------------------------------------------- //
 // Language:    Visual C++, Visual Studio 2015                             //

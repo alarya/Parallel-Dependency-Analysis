@@ -2,7 +2,7 @@
 #define FileMgr_H
 /////////////////////////////////////////////////////////////////////////////
 // FileMgr.h - Gets files of specified pattern recursively                 //
-// ver 1.0                                                                 //
+// ver 1.1                                                                 //
 // ----------------------------------------------------------------------- //
 // Language:    Visual C++, Visual Studio 2015                             //
 // Platform:    ThinkPad L440, Core i7-4712MQ                              //
@@ -20,11 +20,14 @@
 *
 * Public Interface:
 * =================
-* FileMgr f();
-* std::vector<strings> files = f.getAllFiles("dir","*.cpp");
+* FileMgr f();                                                         // creates a new instance //
+* std::vector<strings> files = f.getAllFiles("dir","*.cpp");           // get all files within a dir and matching a pattern //
 *           // dir - Relative directory path
 *           // *.cpp - files ending with .cpp
 *
+* std::vector<strings> files = f.getAllFilesForPatterns("dir",patterns);   //get all files within a dir and matching vector of patterns //
+*           // dir = relative directory (root for searching files)
+			// 
 * Required Files:
 * ===============
 * FileSystem.h, FileSystem.cpp, FileMgr.cpp
@@ -38,6 +41,7 @@
 *
 * ver 1.0 : 12 March 2016
 * - first release
+* ver 1.1 : 13 April 2016
 */
 #include <iostream>
 #include <vector>
@@ -52,6 +56,7 @@ namespace File {
 		FileMgr() {};
 		~FileMgr() {};
 		vector<string> getAllFiles(string dir, string pattern);
+		vector<string> getAllFilesForPatterns(string dir, vector<string> patterns);
 	private:
 		vector<string> files;
 		void FileMgr::getFiles(string dir, string pattern);

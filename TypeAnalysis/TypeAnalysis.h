@@ -1,7 +1,7 @@
 #ifndef TYPEANALYSIS_H
 #define TYPEANALYSIS_H
 /////////////////////////////////////////////////////////////////////////////
-// ParallelDependencyAnalysis.h - Performs dependency analysis in 2 passes //
+// TypeAnalysis.h - Build Type Table for a specified file                  //
 // ver 1.0                                                                 //
 // ----------------------------------------------------------------------- //
 // Language:    Visual C++, Visual Studio 2015                             //
@@ -12,16 +12,13 @@
 /*
 * Module Operations:
 * ==================
-* Acts as an executive for the application of code analysis using Abstract
-* Syntax tree. Expects two arguments :-
-*     1) Relative directory   (Eg:  "../../Parser" )
-*     2) Search pattern       (Eg: "*.cpp")
+* builds a type table of the user types defined in a package.
+* The types captured are dependent on what rules are configured in the parser
 *
 * Public Interface:
 * =================
-* MetricAnalyzer m;            //create a new instance
-* m.Analyzer(file);            //prints package analysis data for the file passed
-//takes the full file path
+* TypeAnalysis ta;             //create a new instance
+* ta.doAnalysis(file);         //returns the type table built for the package specified
 *
 * Required Files:
 * ===============

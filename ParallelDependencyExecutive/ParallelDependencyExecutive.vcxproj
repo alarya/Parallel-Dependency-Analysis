@@ -142,6 +142,40 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\AST\AbstractSyntaxTree.cpp" />
+    <ClCompile Include="..\AST\ASTNode.cpp" />
+    <ClCompile Include="..\DependencyAnalysis\DependencyAnalysis.cpp" />
+    <ClCompile Include="..\FileMgr\FileMgr.cpp" />
+    <ClCompile Include="..\FileSystem-Windows\FileSystemDemo\FileSystem.cpp" />
+    <ClCompile Include="..\ParallelDependencyAnalysis\ParallelDependencyAnalysis.cpp" />
+    <ClCompile Include="..\Parser\ActionsAndRules.cpp" />
+    <ClCompile Include="..\Parser\ConfigureParser.cpp" />
+    <ClCompile Include="..\Parser\Parser.cpp" />
+    <ClCompile Include="..\SemiExp\SemiExp.cpp" />
+    <ClCompile Include="..\ThreadPool\BlockingQueue.cpp" />
+    <ClCompile Include="..\ThreadPool\QueuedWorkItems.cpp" />
+    <ClCompile Include="..\Tokenizer\Tokenizer.cpp" />
+    <ClCompile Include="..\TypeAnalysis\TypeAnalysis.cpp" />
+    <ClCompile Include="..\Utilities\Utilities.cpp" />
+    <ClCompile Include="ParallelDependencyExecutive.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\AST\AbstractSyntaxTree.h" />
+    <ClInclude Include="..\AST\ASTNode.h" />
+    <ClInclude Include="..\DependencyAnalysis\DependencyAnalysis.h" />
+    <ClInclude Include="..\FileMgr\FileMgr.h" />
+    <ClInclude Include="..\FileSystem-Windows\FileSystemDemo\FileSystem.h" />
+    <ClInclude Include="..\ParallelDependencyAnalysis\ParallelDependencyAnalysis.h" />
+    <ClInclude Include="..\Parser\ActionsAndRules.h" />
+    <ClInclude Include="..\Parser\ConfigureParser.h" />
+    <ClInclude Include="..\Parser\Parser.h" />
+    <ClInclude Include="..\SemiExp\SemiExp.h" />
+    <ClInclude Include="..\ThreadPool\BlockingQueue.h" />
+    <ClInclude Include="..\ThreadPool\QueuedWorkItems.h" />
+    <ClInclude Include="..\Tokenizer\Tokenizer.h" />
+    <ClInclude Include="..\TypeAnalysis\TypeAnalysis.h" />
+    <ClInclude Include="..\Utilities\Utilities.h" />
+    <ClInclude Include="ParallelDependencyExecutive.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

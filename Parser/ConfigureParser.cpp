@@ -22,7 +22,7 @@ using namespace AST;
 
 
 //-----------------ConfigureParserForPrintingToScreen---------------------------------------
-//----< destructor releases all parts >------------------------------
+//------destructor releases all parts >-------------------------------------------------------//
 ConfigParseToConsole::~ConfigParseToConsole()
 {
   // when Builder goes out of scope, everything must be deallocated
@@ -48,7 +48,7 @@ ConfigParseToConsole::~ConfigParseToConsole()
   pIn->close();
   delete pIn;
 }
-//----< attach toker to a file stream or stringstream >------------
+//------attach toker to a file stream or stringstream-----------------------------------------//
 bool ConfigParseToConsole::Attach(const std::string& name, bool isFile)
 {
   if(pToker == 0)
@@ -58,7 +58,7 @@ bool ConfigParseToConsole::Attach(const std::string& name, bool isFile)
     return false;
   return pToker->attach(pIn);
 }
-//----< Here's where alll the parts get assembled >----------------
+//------Here's where alll the parts get assembled---------------------------------------------//
 Parser* ConfigParseToConsole::Build()
 {
   try
@@ -108,8 +108,8 @@ Parser* ConfigParseToConsole::Build()
 }
 
 
-//-----------------ConfigureParserForAST---------------------------------------
-//----< destructor releases all parts >----------------------------
+//-----------------ConfigureParserForAST-------------------------------------------------------
+//----destructor releases all parts >---------------------------------------------------------//
 ConfigParserForAST::~ConfigParserForAST()
 {
 	//rules take care of deleting their actions
@@ -135,7 +135,7 @@ ConfigParserForAST::~ConfigParserForAST()
 	pIn->close();
 	delete pIn;
 }
-//----< attach toker to a file stream or stringstream >------------
+//-----attach toker to a file stream or stringstream------------------------------------------//
 bool ConfigParserForAST::Attach(const std::string& name, bool isFile)
 {
 	if (pToker == 0)
@@ -217,7 +217,7 @@ OtherScopes* configureRuleForOtherScope(Parser* pParser, Repository* pRepo)
 	pParser->addRule(pOtherScopes);
 	return pOtherScopes;
 }
-//----< Here's where all the parts get assembled >----------------
+//------Here's where all the parts get assembled----------------------------------------------//
 Parser* ConfigParserForAST::Build()
 {
 	try
@@ -252,8 +252,10 @@ Parser* ConfigParserForAST::Build()
 }
 
 
-//-------------------ConfigureParserForTypeTable-----------------------------
-//---Destructor------------------------------------------------
+
+
+//-------------------ConfigureParserForTypeTable---------------------------------------------------
+//---Destructor------------------------------------------------------------------------------------//
 ConfigParserForTypeTable::~ConfigParserForTypeTable()
 {
 	//rules take care of deleting their actions
@@ -275,7 +277,7 @@ ConfigParserForTypeTable::~ConfigParserForTypeTable()
 	pIn->close();
 	delete pIn;
 }
-//----attach toker to a file stream or stringstream------------
+//----attach toker to a file stream or stringstream------------------------------------------------//
 bool ConfigParserForTypeTable::Attach(const std::string& name, bool isFile)
 {
 	if (pToker == 0)
@@ -288,7 +290,7 @@ bool ConfigParserForTypeTable::Attach(const std::string& name, bool isFile)
 
 	return pToker->attach(pIn);
 }
-//----Build the various parts of the parser--------------------
+//----Build the various parts of the parser---------------------------------------------------------//
 Parser* ConfigParserForTypeTable::Build()
 {
 	try
@@ -325,6 +327,16 @@ Parser* ConfigParserForTypeTable::Build()
 		pStructDefinition->addAction(pSaveStructToTypeTable);
 		pParser->addRule(pStructDefinition);
 
+		pEnumDefinition = new EnumDefinition();
+		pSaveEnumToTypeTable = new SaveEnumToTypeTable(pRepo);
+		pEnumDefinition->addAction(pSaveEnumToTypeTable);
+		pParser->addRule(pEnumDefinition);
+
+		pUsingDefinition = new UsingDefinition();
+		pSaveUsingToTypeTable = new SaveUsingToTypeTable(pRepo);
+		pUsingDefinition->addAction(pSaveUsingToTypeTable);
+		pParser->addRule(pUsingDefinition);
+
 		return pParser;
 	}
 	catch (std::exception& ex)
@@ -336,7 +348,7 @@ Parser* ConfigParserForTypeTable::Build()
 
 
 //------------------ConfigureParserForDepAnalysis-----------------------------
-//---Destructor-----------------------------------------
+//---Destructor---------------------------------------------------------------------------------------//
 ConfigParserForDepAnalysis::~ConfigParserForDepAnalysis()
 {
 	//rules take care of deleting their actions
@@ -356,7 +368,7 @@ ConfigParserForDepAnalysis::~ConfigParserForDepAnalysis()
 	pIn->close();
 	delete pIn;
 }
-//----attach toker to a file stream or stringstream-----------
+//----attach toker to a file stream or stringstream---------------------------------------------------//
 bool ConfigParserForDepAnalysis::Attach(const std::string& name, bool isFile)
 {
 	if (pToker == 0)
@@ -369,7 +381,7 @@ bool ConfigParserForDepAnalysis::Attach(const std::string& name, bool isFile)
 
 	return pToker->attach(pIn);
 }
-//----Build the various parts of the parser--------------------
+//----Build the various parts of the parser-----------------------------------------------------------//
 Parser* ConfigParserForDepAnalysis::Build()
 {
 	try
@@ -382,6 +394,7 @@ Parser* ConfigParserForDepAnalysis::Build()
 
 		pClassDefinition = new ClassDefinition();
 		pStructDefinition = new StructDefinition();
+		pFunctionDefinition = new FunctionDefinition();
 		pDeclaration = new Declaration();
 		pExecutable = new Executable();
 
@@ -389,22 +402,15 @@ Parser* ConfigParserForDepAnalysis::Build()
 		pCheckDependencyStruct = new CheckDependency(pRepo);
 		pCheckDependencyDeclaration = new CheckDependency(pRepo);
 		pCheckDependencyExecutable = new CheckDependency(pRepo);
-		//pPrintClass = new PrintClass;
-		//pPrintStruct = new PrintStruct;
-		//pShowDeclaration = new ShowDeclaration;
-		//pShowExecutable = new ShowExecutable;
-
+		pCheckDependencyFunctionDefinition = new CheckDependency(pRepo);
+		
 		pClassDefinition->addAction(pCheckDependencyClass);
 		pStructDefinition->addAction(pCheckDependencyStruct);
 		pDeclaration->addAction(pCheckDependencyDeclaration);
 		pExecutable->addAction(pCheckDependencyExecutable);
 
-		//pClassDefinition->addAction(pPrintClass);
-		//pStructDefinition->addAction(pPrintStruct);
-		//pDeclaration->addAction(pShowDeclaration);
-		//pExecutable->addAction(pShowExecutable);
-
 		pParser->addRule(pClassDefinition);
+		pParser->addRule(pFunctionDefinition);
 		pParser->addRule(pStructDefinition);
 		pParser->addRule(pDeclaration);
 		pParser->addRule(pExecutable);
@@ -417,7 +423,7 @@ Parser* ConfigParserForDepAnalysis::Build()
 		return 0;
 	}
 }
-//----Set Type table in Repository for Dependency Analysis------------------
+//----Set Type table in Repository for Dependency Analysis--------------------------------------------//
 void ConfigParserForDepAnalysis::setTypeTable(std::vector<Type>* TypeTable)
 {
 	pRepo->setTypeTable(TypeTable);
@@ -425,16 +431,19 @@ void ConfigParserForDepAnalysis::setTypeTable(std::vector<Type>* TypeTable)
 	//It is stored locally in the repository and built using mergedTypeTable
 	pRepo->buildTypeLookUpFromTypeTable();
 }
+//----get the dependencies built by dependency analysis-----------------------------------------------//
 std::map<std::string, std::vector<std::string>> ConfigParserForDepAnalysis::getDependencies()
 {
 	return pRepo->getDependencies();
 }
 
+
+
+
 #ifdef TEST_CONFIGUREPARSER
 
 #include <queue>
 #include <string>
-
 
 //----------print the type table generated by parsing--------------//
 void printTypeTable(std::vector<Type>* pTypeTable)
